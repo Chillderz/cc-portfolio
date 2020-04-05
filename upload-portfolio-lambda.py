@@ -5,8 +5,6 @@ import mimetypes
 
 def lambda_handler(event, context):
     s3 = boto3.resource('s3')
-    sns = boto3.resource('sns')
-    topic = sns.Topic('arn:aws:sns:us-east-1:910934198021:deployPortfolioTopic')
 
     location = {
         "bucketName": 'portfoliobuild.cchilders.com',
@@ -38,13 +36,11 @@ def lambda_handler(event, context):
                 portfolio_bucket.Object(nm).Acl().put(ACL='public-read')
            
         print("Job Done")     
-        topic.publish(Subject="Portfolio Deployed", Message="Portfolio deployed successfully")
         
         if job:
             codepipeline = boto3.client('codepipeline')
             codepipeline.put_job_success_result(jobId=job["id"])
     except:
-        topic.publish(Subject="Portfolio Deploy Failed", Message="The Portfolio was not deployed successfully")
         raise
         
     return 'Hello from Lambda'
